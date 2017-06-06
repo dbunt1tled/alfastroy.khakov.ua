@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style type="text/css">
+      html, body { height: 100%;  min-height: 100%; margin: 0; padding: 0; }
+      .controls {
+        margin-top: 10px;
+        border: 1px solid transparent;
+        border-radius: 2px 0 0 2px;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        height: 32px;
+        outline: none;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      }
+      #adr {
+        background-color: #fff;
+        font-family: Roboto;
+        font-size: 15px;
+        font-weight: 300;
+        margin-left: 12px;
+        padding: 0 11px 0 13px;
+        text-overflow: ellipsis;
+        width: 80%;
+        z-index: 1051 !important;
+      }
+      #adr:focus {
+        border-color: #4d90fe;
+      }
+    </style>
+  </head>
+  <body>
+    <input type="text" id="adr" class="controls" onkeydown="if (event.keyCode==13) {codeAddress()} " value="" placeholder="Введите улицу в Харькове" />
+    <p>Стоимость щебня <span id="num_cost">420</span></p>
+    <p>Стоимость доставки зависит от удаленности строительного объекта от карьера.</p>
+<ul>
+<li>Зона 1: <span id="region1">350</span> грн.</li>
+<li>Зона 2: <span id="region2">430</span> грн.</li>
+<li>Зона 3: <span id="region3">550</span> грн.</li>
+<li>Зона 4: <span id="region4">550</span> грн.</li>
+</ul>
+    <div id="map" style="width: 100%;height: 500px; "></div>
+    <script type="text/javascript">
+var map;
+var infoWnd;
+var rayon_1_cord = [
+
+    {lat: 49.893, lng: 36.153},
+    {lat: 49.924, lng: 36.130},
+    {lat: 49.945, lng: 36.136},
+    {lat: 49.953, lng: 36.129},
+    {lat: 49.949, lng: 36.160},
+    {lat: 49.950, lng: 36.165},
+    {lat: 49.953, lng: 36.167},
+    {lat: 49.957, lng: 36.168},
+    {lat: 49.971, lng: 36.190},
+    {lat: 49.970, lng: 36.191},
+    {lat: 49.972, lng: 36.195},
+    {lat: 49.973, lng: 36.199},
+    {lat: 49.977, lng: 36.200},
+    {lat: 49.983, lng: 36.214},
+    {lat: 49.987, lng: 36.212},
+    {lat: 49.988, lng: 36.228},
+    {lat: 49.987, lng: 36.230},
+    {lat: 49.989, lng: 36.243},
+    {lat: 49.990, lng: 36.263},
+    {lat: 49.972, lng: 36.301},
+    {lat: 49.959, lng: 36.354},
+    {lat: 49.933, lng: 36.433},
+    {lat: 49.929, lng: 36.428},
+    {lat: 49.927, lng: 36.415},
+    {lat: 49.897, lng: 36.400},
+    {lat: 49.885, lng: 36.378},
+    {lat: 49.879, lng: 36.327},
+    {lat: 49.887, lng: 36.289},
+    {lat: 49.924, lng: 36.268},
+    {lat: 49.914, lng: 36.259},
+    {lat: 49.912, lng: 36.194},
+    {lat: 49.900, lng: 36.160},
+    {lat: 49.893, lng: 36.153}
+  ];
+
+  var rayon_2_cord = [
+    {lat: 49.953, lng: 36.129},
+    {lat: 49.949, lng: 36.160},
+    {lat: 49.950, lng: 36.165},
+    {lat: 49.953, lng: 36.167},
+    {lat: 49.957, lng: 36.168},
+    {lat: 49.971, lng: 36.190},
+    {lat: 49.970, lng: 36.191},
+    {lat: 49.972, lng: 36.195},
+    {lat: 49.973, lng: 36.199},
+    {lat: 49.977, lng: 36.200},
+    {lat: 49.983, lng: 36.214},
+    {lat: 49.987, lng: 36.212},
+    {lat: 49.988, lng: 36.228},
+    {lat: 49.987, lng: 36.230},
+    {lat: 49.989, lng: 36.243},
+    {lat: 49.990, lng: 36.263},
+    {lat: 49.972, lng: 36.301},
+    {lat: 49.959, lng: 36.354},
+    {lat: 49.933, lng: 36.433},
+    {lat: 49.943, lng: 36.436},
+    {lat: 50.010, lng: 36.408},
+    {lat: 50.054, lng: 36.360},
+    {lat: 50.053, lng: 36.351},
+    {lat: 50.046, lng: 36.335},
+    {lat: 50.044, lng: 36.321},
+    {lat: 50.046, lng: 36.315},
+    {lat: 50.035, lng: 36.308},
+    {lat: 50.023, lng: 36.296},
+    {lat: 50.015, lng: 36.290},
+    {lat: 50.002, lng: 36.269},
+    {lat: 50.004, lng: 36.261},
+    {lat: 50.007, lng: 36.258},
+    {lat: 50.010, lng: 36.257},
+    {lat: 50.014, lng: 36.245},
+    {lat: 50.007, lng: 36.237},
+    {lat: 50.005, lng: 36.236},
+    {lat: 50.007, lng: 36.230},
+    {lat: 50.007, lng: 36.226},
+    {lat: 50.005, lng: 36.225},
+    {lat: 50.004, lng: 36.225},
+    {lat: 50.003, lng: 36.218},
+    {lat: 50.011, lng: 36.189},
+    {lat: 50.010, lng: 36.129},
+    {lat: 49.974, lng: 36.127},
+    {lat: 49.953, lng: 36.129}
+  ];
+
+  // Construct the polygon.
+
+  var rayon_3_cord = [
+    {lat: 50.054, lng: 36.360},
+    {lat: 50.053, lng: 36.351},
+    {lat: 50.046, lng: 36.335},
+    {lat: 50.044, lng: 36.321},
+    {lat: 50.046, lng: 36.315},
+    {lat: 50.035, lng: 36.308},
+    {lat: 50.023, lng: 36.296},
+    {lat: 50.015, lng: 36.290},
+    {lat: 50.002, lng: 36.269},
+    {lat: 50.004, lng: 36.261},
+    {lat: 50.007, lng: 36.258},
+    {lat: 50.010, lng: 36.257},
+    {lat: 50.014, lng: 36.245},
+    {lat: 50.007, lng: 36.237},
+    {lat: 50.005, lng: 36.236},
+    {lat: 50.007, lng: 36.230},
+    {lat: 50.007, lng: 36.226},
+    {lat: 50.005, lng: 36.225},
+    {lat: 50.004, lng: 36.225},
+    {lat: 50.003, lng: 36.218},
+    {lat: 50.011, lng: 36.189},
+    {lat: 50.010, lng: 36.129},
+    {lat: 50.024, lng: 36.130},
+    {lat: 50.042, lng: 36.147},
+    {lat: 50.063, lng: 36.197},
+    {lat: 50.077, lng: 36.210},
+    {lat: 50.064, lng: 36.265},//////////////////////
+    {lat: 50.084, lng: 36.319},
+    {lat: 50.059, lng: 36.356},
+    {lat: 50.054, lng: 36.360}
+  ];
+
+  // Construct the polygon.
+
+  var rayon_4_cord = [
+    {lat: 50.077, lng: 36.210},
+    {lat: 50.064, lng: 36.265},/* ??????????/**/
+    {lat: 50.084, lng: 36.319},
+    {lat: 50.093, lng: 36.295},
+    {lat: 50.101, lng: 36.268},
+    {lat: 50.099, lng: 36.253},
+    {lat: 50.092, lng: 36.243},
+    {lat: 50.088, lng: 36.226},
+    {lat: 50.077, lng: 36.210}
+  ];
+            var rayon_1;
+            var rayon_2;
+            var rayon_3;
+            var rayon_4;
+
+function initMap() {
+  map = new google.maps.Map(document.getElementById('map'), {
+    center: {lat: 49.988, lng: 36.232},
+    zoom: 11
+  });
+  var input = /** @type {!HTMLInputElement} */(
+            document.getElementById('adr'));
+            map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+
+  rayon_1 = new google.maps.Polygon({
+    paths: rayon_1_cord,
+    strokeColor: '#FF0000',
+    strokeOpacity: 0.8,
+    strokeWeight: 2,
+    fillColor: '#FF0000',
+    fillOpacity: 0.2
+  });
+  rayon_1.setMap(map);
+  rayon_2 = new google.maps.Polygon({
+    paths: rayon_2_cord,
+    strokeColor: '#3778C8',
+    strokeOpacity: 0.8,
+    strokeWeight: 2,
+    fillColor: '#3778C8',
+    fillOpacity: 0.1
+  });
+  rayon_2.setMap(map);
+  rayon_3 = new google.maps.Polygon({
+    paths: rayon_3_cord,
+    strokeColor: '#6C9F43',
+    strokeOpacity: 0.8,
+    strokeWeight: 2,
+    fillColor: '#6C9F43',
+    fillOpacity: 0.2
+  });
+  rayon_3.setMap(map);
+  rayon_4 = new google.maps.Polygon({
+    paths: rayon_4_cord,
+    strokeColor: '#FFD000',
+    strokeOpacity: 0.8,
+    strokeWeight: 2,
+    fillColor: '#FFD000',
+    fillOpacity: 0.2
+  });
+  rayon_4.setMap(map);
+
+  var marker1 = new google.maps.Marker({
+    position: {lat: 49.9274, lng: 36.1581},
+    animation: google.maps.Animation.DROP,
+    map: map,
+    label:'Регион 1',
+    title: 'Регион 1'
+  });
+  var marker2 = new google.maps.Marker({
+    position: {lat: 49.9472, lng: 36.2779},
+    animation: google.maps.Animation.DROP,
+    map: map,
+    label:'Регион 1',
+    title: 'Регион 1'
+  });
+  var marker3 = new google.maps.Marker({
+    position: {lat: 49.9150, lng: 36.3401},
+    animation: google.maps.Animation.DROP,
+    map: map,
+    label:'Регион 1',
+    title: 'Регион 1'
+  });
+
+  var marker4 = new google.maps.Marker({
+    position: {lat: 49.9857, lng: 36.1671},
+    animation: google.maps.Animation.DROP,
+    map: map,
+    label:'Регион 2',
+    title: 'Регион 2'
+  });
+  var marker5 = new google.maps.Marker({
+    position: {lat: 50.0082, lng: 36.3319},
+    animation: google.maps.Animation.DROP,
+    map: map,
+    label:'Регион 2',
+    title: 'Регион 2'
+  });
+  var marker6 = new google.maps.Marker({
+    position: {lat: 49.9772, lng: 36.3827},
+    animation: google.maps.Animation.DROP,
+    map: map,
+    label:'Регион 2',
+    title: 'Регион 2'
+  });
+  var marker7 = new google.maps.Marker({
+    position: {lat: 50.034, lng: 36.2193},
+    animation: google.maps.Animation.DROP,
+    map: map,
+    label:'Регион 3',
+    title: 'Регион 3'
+  });
+
+  var marker8 = new google.maps.Marker({
+    position: {lat: 50.0516, lng: 36.3047},
+    animation: google.maps.Animation.DROP,
+    map: map,
+    label:'Регион 3',
+    title: 'Регион 3'
+  });
+  var marker9 = new google.maps.Marker({
+    position: {lat: 50.0749, lng: 36.2471},
+    animation: google.maps.Animation.DROP,
+    map: map,
+    label:'Регион 4',
+    title: 'Регион 4'
+  });
+  var marker10 = new google.maps.Marker({
+    position: {lat: 50.0791, lng: 36.2893},
+    animation: google.maps.Animation.DROP,
+    map: map,
+    label:'Регион 4',
+    title: 'Регион 4'
+  });
+
+
+
+
+
+  google.maps.event.addListener(map, 'click', function(event) {
+    if (marker1.getAnimation() !== null) {
+      marker1.setAnimation(null);
+    }
+    if (marker2.getAnimation() !== null) {
+      marker2.setAnimation(null);
+    }
+    if (marker3.getAnimation() !== null) {
+      marker3.setAnimation(null);
+    }
+    if (marker4.getAnimation() !== null) {
+      marker4.setAnimation(null);
+    }
+    if (marker5.getAnimation() !== null) {
+      marker5.setAnimation(null);
+    }
+    if (marker6.getAnimation() !== null) {
+      marker6.setAnimation(null);
+    }
+    if (marker7.getAnimation() !== null) {
+      marker7.setAnimation(null);
+    }
+    if (marker8.getAnimation() !== null) {
+      marker8.setAnimation(null);
+    }
+    if (marker9.getAnimation() !== null) {
+      marker9.setAnimation(null);
+    }
+    if (marker10.getAnimation() !== null) {
+      marker10.setAnimation(null);
+    }
+  });
+
+
+   marker1.setAnimation(google.maps.Animation.BOUNCE);
+   marker2.setAnimation(google.maps.Animation.BOUNCE);
+   marker3.setAnimation(google.maps.Animation.BOUNCE);
+   marker4.setAnimation(google.maps.Animation.BOUNCE);
+   marker5.setAnimation(google.maps.Animation.BOUNCE);
+   marker6.setAnimation(google.maps.Animation.BOUNCE);
+   marker7.setAnimation(google.maps.Animation.BOUNCE);
+   marker8.setAnimation(google.maps.Animation.BOUNCE);
+   marker9.setAnimation(google.maps.Animation.BOUNCE);
+   marker10.setAnimation(google.maps.Animation.BOUNCE);
+
+   geocoder = new google.maps.Geocoder(); // геокодер
+	 markerst = new google.maps.Marker({ // маркер
+	                 visible: false,
+	                 map: map
+  });
+
+}
+function codeAddress(){
+     var address = document.getElementById('adr').value;
+	 if(address.length<5){
+		return false;
+	 }
+     geocoder.geocode( { 'address':'Харьков,'+address}, function(results, status) {
+            var rc = document.getElementById('num_cost').innerHTML;
+         if (status == google.maps.GeocoderStatus.OK) {
+            var zona = 'Регион доставки не известен';
+            var cena ='';
+            var stoimost='';
+            var summ ='';
+            var r1t = document.getElementById('region1').innerHTML;
+
+            if (google.maps.geometry.poly.containsLocation(results[0].geometry.location, rayon_1)) {
+                zona = "Регион доставки: <b>1</b>.";
+                cena = 'Стоимость доставки: <b>'+r1t+'</b> грн.';
+                stoimost = 'Цена товара: <b>'+rc+'</b> грн.';
+                summ = 'Итого к оплате: <b>'+(parseFloat(rc)+parseFloat(r1t))+'</b> грн.';
+            }else{
+              if (google.maps.geometry.poly.containsLocation(results[0].geometry.location, rayon_2)) {
+                  var r2t = document.getElementById('region2').innerHTML;
+                  zona = "Регион доставки: <b>2</b>.";
+                  cena = 'Стоимость доставки: <b>'+r2t+'</b> грн.';
+                  stoimost = 'Цена товара: <b>'+rc+'</b> грн.';
+                  summ = 'Итого к оплате: <b>'+(parseFloat(r2t)+parseFloat(rc))+'</b> грн.';
+              }else{
+                if (google.maps.geometry.poly.containsLocation(results[0].geometry.location, rayon_3)) {
+                  var r3t = document.getElementById('region3').innerHTML;
+                    zona = "Регион доставки: <b>3</b>.";
+                    cena = 'Стоимость доставки: <b>'+r3t+'</b> грн.';
+                    stoimost = 'Цена товара: <b>'+rc+'</b> грн.';
+                    summ = 'Итого к оплате: <b>'+(parseFloat(r3t)+parseFloat(rc))+'</b> грн.';
+                }else{
+                  if (google.maps.geometry.poly.containsLocation(results[0].geometry.location, rayon_4)) {
+                      var r4t = document.getElementById('region4').innerHTML;
+                      zona = "Регион доставки: <b>4</b>.";
+                      cena = 'Стоимость доставки: <b>'+r3t+'</b> грн.';
+                      stoimost = 'Цена товара: <b>'+rc+'</b> грн.';
+                      summ = 'Итого к оплате: <b>'+(parseFloat(r4t)+parseFloat(rc))+'</b> грн.';
+                  }
+                }
+              }
+            }
+             map.setCenter(results[0].geometry.location);
+             markerst.setOptions({
+             	visible: true,
+             	position: results[0].geometry.location
+             });/**/
+              infoWnd = new google.maps.InfoWindow({
+              content: '<div><b>Найдено:</b></div><div>'+results[0].formatted_address+'.</div><div>'+zona+'</div><div>'+cena+'</div><div>'+stoimost+'</div><div>'+summ+'</div>',
+              position: results[0].geometry.location
+              });
+            infoWnd.open(map, markerst);
+            /*markerst.addListener('click', function() {
+              infoWnd.open(map, markerst);
+            });/**/
+
+             map.setZoom(15);
+         } else {
+            alert('Искомый адрес: Харьков, '+address+' не найден.');
+        }
+     });
+ }
+    </script>
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDRUzKK4PvDA4cQ5MwkOFPZeKfnDrjDBto&language=ru-RU&libraries=places&callback=initMap">
+    </script>
+    <div class="copyright"><a href="mailto:unt1tled@ua.fm">Письмо разработчику</a></div>
+</body></html>
